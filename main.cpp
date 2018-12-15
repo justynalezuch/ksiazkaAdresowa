@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <sstream>
+#include <windows.h>
 
 using namespace std;
 
@@ -12,6 +13,13 @@ struct Adresat
 {
     int id;
     string imie, nazwisko, nrTelefonu, email, adres;
+};
+
+struct Uzytkownik
+{
+    int id;
+    string login, haslo;
+
 };
 
 string wczytajLinie()
@@ -28,7 +36,7 @@ char wczytajZnak()
 
     while (true)
     {
-        getline(cin, wejscie);
+        if(getline(cin, wejscie)){
 
         if (wejscie.length() == 1)
         {
@@ -36,6 +44,7 @@ char wczytajZnak()
             break;
         }
         cout << "To nie jest pojedynczy znak. Wpisz ponownie." << endl;
+        }
     }
     return znak;
 }
@@ -354,7 +363,6 @@ void usunAdres(vector <Adresat> &adresaci, int &idOstatniegoElementu)
 }
 
 
-
 void wczytajAdresyZPliku (vector <Adresat> &adresaci, int &idOstatniegoElementu)
 {
     fstream plik;
@@ -410,64 +418,165 @@ void wczytajAdresyZPliku (vector <Adresat> &adresaci, int &idOstatniegoElementu)
     }
 }
 
+void rejestracja (vector <Uzytkownik> &uzytkownicy, int &iloscUzytkownikow)
+{
+
+    string login, haslo;
+    cout<<"Podaj nazwe uzytkownika: "<<endl;
+    login = wczytajLinie();
+    int i = 0;
+
+
+    while(i < uzytkownicy.size())
+    {
+        if(uzytkownicy[i].login == login)
+        {
+            cout<<"Taki uzytkownik istnieje. Wpisz inna nazwe uzytkownika: "<<endl;
+            login = wczytajLinie();
+            i =0;
+        }
+        else
+        {
+            i++;
+        }
+    }
+
+    cout<<"Podaj haslo: "<<endl;
+    haslo = wczytajLinie();
+    uzytkownicy.push_back({iloscUzytkownikow+1, login, haslo});
+    iloscUzytkownikow++;
+
+    cout<<"Konto zalozone."<<endl;
+    system("pause");
+
+}
+
+void logowanie (vector <Uzytkownik> &uzytkownicy, int &idZalogowanegoUzytkownika)
+{
+
+    string login, haslo;
+    cout<<"Podaj login: "<<endl;
+    login = wczytajLinie();
+    int i = 0;
+
+    while(i < uzytkownicy.size())
+    {
+        if(uzytkownicy[i].login == login)
+        {
+            for(int proby = 0 ; proby< 3; proby++)
+            {
+                cout<<"Podaj haslo. Pozostalo prob "<< 3 -proby<<": "<<endl;
+                haslo = wczytajLinie();
+
+                if(uzytkownicy[i].haslo == haslo)
+                {
+                    cout<<"Zalogowales sie. "<<endl;
+                    system("pause");
+                    idZalogowanegoUzytkownika = uzytkownicy[i].id;
+                    return;
+                }
+            }
+            cout<<"Podales 3 razy bledne haslo. Sprobuj ponownie."<<endl;
+            system("pause");
+            return;
+        }
+        i++;
+
+    }
+
+    cout<<"Nie ma uzytkownika z takim loginem."<<endl;
+    system("pause");
+    return;
+
+}
 
 int main ()
 {
 
     vector <Adresat> adresaci;
+    vector <Uzytkownik> uzytkownicy;
+
     char wybor;
-    int idOstatniegoElementu = 0;
+    int idOstatniegoElementu = 0, idZalogowanegoUzytkownika = 0,  iloscUzytkownikow = 0;
 
     wczytajAdresyZPliku(adresaci, idOstatniegoElementu);
 
+
     while(true)
     {
-
         system("cls");
-        cout<<"KSIAZKA ADRESOWA"<<endl;
-        cout<<"1. Dodaj adresata"<<endl;
-        cout<<"2. Wyszukaj po imieniu"<<endl;
-        cout<<"3. Wyszukaj po nazwisku"<<endl;
-        cout<<"4. Wyswietl wszystkich adresatow"<<endl;
-        cout<<"5. Usun adresata"<<endl;
-        cout<<"6. Edytuj adresata"<<endl;
-        cout<<"9. Zakoncz program"<<endl;
-        cout<<"Twoj wybor:"<<endl;
-        wybor = wczytajZnak();
+        if(idZalogowanegoUzytkownika == 0)
+        {
+            cout<<"KSIAZKA ADRESOWA"<<endl;
+            cout<<"1. Logowanie"<<endl;
+            cout<<"2. Rejestracja"<<endl;
+            cout<<"3. Zamknij program"<<endl;
 
-        if(wybor == '1')
-        {
-            dodajAdres(adresaci, idOstatniegoElementu);
-        }
-        if(wybor == '2')
-        {
-            wyszukajPoImieniu(adresaci, idOstatniegoElementu);
+            cout << "Twoj wybor: ";
+            wybor = wczytajZnak();
 
-        }
-        if(wybor == '3')
-        {
-            wyszukajPoNazwisku(adresaci, idOstatniegoElementu);
-        }
-        if(wybor == '4')
-        {
-            wyswietlWszystkieAdresy(adresaci, idOstatniegoElementu);
+            if(wybor == '1')
+            {
+                logowanie(uzytkownicy, idZalogowanegoUzytkownika);
+            }
+            if(wybor == '2')
+            {
+                rejestracja(uzytkownicy, iloscUzytkownikow);
+            }
 
-        }
-        if(wybor == '5')
-        {
-            usunAdres(adresaci, idOstatniegoElementu);
-
+            if(wybor == '3')
+            {
+                exit(0);
+            }
         }
 
-        if(wybor == '6')
+        else
         {
-            edytujAdres(adresaci, idOstatniegoElementu);
+            cout<<"KSIAZKA ADRESOWA"<<endl;
+            cout<<"1. Dodaj adresata"<<endl;
+            cout<<"2. Wyszukaj po imieniu"<<endl;
+            cout<<"3. Wyszukaj po nazwisku"<<endl;
+            cout<<"4. Wyswietl wszystkich adresatow"<<endl;
+            cout<<"5. Usun adresata"<<endl;
+            cout<<"6. Edytuj adresata"<<endl;
+            cout<<"9. Zakoncz program"<<endl;
+            cout<<"Twoj wybor:"<<endl;
 
-        }
+            wybor = wczytajZnak();
 
-        if(wybor == '9')
-        {
-            exit(0);
+            if(wybor == '1')
+            {
+                dodajAdres(adresaci, idOstatniegoElementu);
+            }
+            if(wybor == '2')
+            {
+                wyszukajPoImieniu(adresaci, idOstatniegoElementu);
+
+            }
+            if(wybor == '3')
+            {
+                wyszukajPoNazwisku(adresaci, idOstatniegoElementu);
+            }
+            if(wybor == '4')
+            {
+                wyswietlWszystkieAdresy(adresaci, idOstatniegoElementu);
+
+            }
+            if(wybor == '5')
+            {
+                usunAdres(adresaci, idOstatniegoElementu);
+            }
+
+            if(wybor == '6')
+            {
+                edytujAdres(adresaci, idOstatniegoElementu);
+            }
+
+            if(wybor == '9')
+            {
+                exit(0);
+            }
+
         }
     }
 
